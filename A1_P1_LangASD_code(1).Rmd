@@ -15,7 +15,7 @@ In this first part of the assignment you will:
 3) Become familiar with the tidyverse package, which you will find handy for later assignments.
 
 
-## 0. First an introduction on the data
+## 0. First an introduction on the data  
 
 # Language development in Autism Spectrum Disorder (ASD)
 
