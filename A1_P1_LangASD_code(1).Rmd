@@ -38,7 +38,7 @@ N.B. Create a GitHub repository for the Language Development in ASD set of assig
 Set the working directory (the directory with your data and code for these assignments):
 
 ```{r}
-
+setwd("~/Assignemnt1")
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -47,7 +47,9 @@ Load the three data sets, after downloading them from dropbox and saving them in
 * Word data: https://www.dropbox.com/s/8ng1civpl2aux58/token_train.csv?dl=0
 
 ```{r}
-
+d_token <- read.csv("~/Assignemnt1/token_train.csv")
+d_demo <- read.csv("~/Assignemnt1/demo_train(1).csv")
+d_lu <- read.csv("~/Assignemnt1/LU_train.csv")
 ```
 
 Explore the 3 datasets (e.g. visualize them, summarize them, etc.). You will see that the data is messy, since the psychologists collected the demographic data, a linguist analyzed the length of utterance in May 2014 and the same linguist analyzed the words several months later. In particular:
@@ -64,15 +66,17 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 
 
 ```{r}
-
+library(plyr)
+d_demo= rename(d_demo, c(Child.ID="SUBJ", Visit = "VISIT"))
 ```
 
 2b. Find a way to homogeneize the way "visit" is reported. If you look into the original data sets, you will see that in the LU data and the Token data, Visits are called "visit 1" in stead of just 1 (which is the case in the demographic data set).
 Tip: There is a package called stringr, which will be very handy for you also in future assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set. Tip: type ?str_extract() after loading the library, for examples of how to use it.
 
 ```{r}
-
-
+library(stringr)
+d_lu$VISIT=str_extract(d_lu$VISIT,"\\d")
+d_token$VISIT=str_extract(d_token$VISIT,"\\d")
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the data sets will not be merged sufficiently.
@@ -87,7 +91,10 @@ Tip: You will have to do identical work for both data sets, so to save time on t
 
 
 ```{r}
-
+library (gsub)
+d_demo$SUBJ=gsub("\\.","",d_demo$SUBJ)
+d_lu$SUBJ=gsub("\\.","",d_lu$SUBJ)
+d_token$SUBJ=gsub("\\.","",d_token$SUBJ)
 ```
 
 2d. Now that the nitty gritty details of the different data sets are fixed, we want to make a subset of each data set only containig the variables that we wish to use in the final data set.
@@ -105,8 +112,10 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
-
-
+library(tidyverse)
+d_dn <- select(d_demo, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw)
+d_ln <- select(d_lu,SUBJ, VISIT, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
+d_tn <-select(d_token,SUBJ, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
 ```
 
 2e. Finally we are ready to merge all the data sets into just one. 
@@ -116,6 +125,9 @@ Tip: Merge only works for two data frames at the time.
 Tip: Check the number of observations in the datasets before and after merging. What is going on?
 
 ```{r}
+data1<-merge(d_dn,d_tn)
+d_ln$VISIT=as.numeric(d_ln$VISIT)
+data<-merge(data1, d_ln)
 
 ```
 
@@ -130,6 +142,12 @@ Tip: the final dataset should have as many rows as the the old one.
 
 
 ```{r}
+d_vis=data[data$VISIT==1,]
+d_vis=plyr::rename(d_vis,c(ADOS="ADOSx", MullenRaw="nonVerbalIQ", ExpressiveLangRaw="verbalIQ"))
+newdata=merge(data,
+              select(d_vis, SUBJ,ADOSx, nonVerbalIQ, verbalIQ), by="SUBJ") #we have extra columns
+
+newdata=subset(newdata, select = -c(ADOS,MullenRaw, ExpressiveLangRaw)) #dataset without NAs
 
 ```
 
@@ -144,7 +162,13 @@ Tip: as.numeric() might be a useful function, but not alone.
 Tip: Google "how to rename levels in R".
 
 ```{r}
+#genders 1=F 2=M
+newdata$Gender=as.factor(newdata$Gender)
+newdata$Gender=revalue(newdata$Gender, c("1"="F", "2"="M"))
 
+#diagnosis A= ASD and B=TD
+newdata$Diagnosis=as.factor(newdata$Diagnosis)
+newdata$Diagnosis=revalue(newdata$Diagnosis, c("A"="ASD", "B"="TD"))
 
 ```
 
@@ -152,7 +176,7 @@ Tip: Google "how to rename levels in R".
 Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
-
+write.csv(newdata, file = "cleandata.csv")
 ```
 
 
