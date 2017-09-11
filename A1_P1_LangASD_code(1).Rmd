@@ -243,8 +243,11 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+asdalldata <- filter(cleandata, cleandata$Diagnosis=="ASD")
+asd<- select(asdalldata,SUBJ,Diagnosis, CHI_MLU, tokens_CHI)#select coumns needed
+asd2<- select(asdalldata,SUBJ,Diagnosis, CHI_MLU,CHI_MLU,CHI_MLU, tokens_CHI) #NOTHING HAPPENED.. IS IT THE POINT?
 
-
+#??? didn't get that part
 ```
 
 
@@ -254,6 +257,11 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+#1
+
+#2
+
+#3
 
 
 ```
