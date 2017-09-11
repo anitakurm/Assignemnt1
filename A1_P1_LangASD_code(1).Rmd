@@ -162,9 +162,12 @@ Tip: as.numeric() might be a useful function, but not alone.
 Tip: Google "how to rename levels in R".
 
 ```{r}
+#childid into numbers
+newdata$SUBJ = as.numeric(as.factor(newdata$SUBJ))
+
 #genders 1=F 2=M
 newdata$Gender=as.factor(newdata$Gender)
-newdata$Gender=revalue(newdata$Gender, c("1"="F", "2"="M"))
+newdata$Gender=revalue(newdata$Gender, c("1"="M", "2"="F"))
 
 #diagnosis A= ASD and B=TD
 newdata$Diagnosis=as.factor(newdata$Diagnosis)
@@ -193,7 +196,26 @@ List all kids who:
 
 ```{r}
 
+#filtering data 1
+cmlurows=filter(newdata, newdata$CHI_MLU > 2.7) #getting rows
+cmlunames=unique(cmlurows$SUBJ) #getting names from matching rows
+str(cmlunames)
 
+#filtering data 2
+cmlurows2=filter(newdata, newdata$CHI_MLU < 1.5& newdata$VISIT==1) #getting rows
+cmlunames2=unique(cmlurows2$SUBJ) 
+str(cmlunames2)
+
+#filtering data 3
+completevisits=filter(newdata, newdata$VISIT== 6) #find last visit rows
+completenames=unique(completevisits$SUBJ) #create a list of who made it to the sixth visit
+completenames=as.factor(completenames) #as factor
+
+everyone=unique(cleandata$SUBJ) #create a list with all names i nit
+everyone=as.factor(everyone)
+
+library(dplyr)
+setdiff(everyone,completenames) #find subjects, that don't appear in both lists, meaning didn't complete all trials
 ```
 
 
@@ -203,7 +225,15 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+#arranging 1
 
+mostwords=arrange(completevisits,desc(types_CHI)) #completevisits - only vists 6; arrange list descending by types_CHI - amount of words
+mostwords[1,] #that's the kid with the most words on the 6th visit - subject 26
+
+#arranging 2
+firstvisits=filter(newdata, newdata$VISIT== 1) #find first visit rows
+leastwords=arrange(firstvisits,types_CHI) #arrange list by types_CHI
+leastwords[1,] #that's the kid with the least words on 1st visit - subject 57
 
 ```
 
@@ -213,6 +243,7 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+
 
 ```
 
