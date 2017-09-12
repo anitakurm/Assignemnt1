@@ -1,6 +1,6 @@
 ---
 title: "A1_P1_Student"
-author: "Céline Carlsen"
+author: "Anita Kurm"
 date: "29/8/2017"
 output: html_document
 ---
@@ -213,9 +213,22 @@ completenames=as.factor(completenames) #as factor
 
 everyone=unique(cleandata$SUBJ) #create a list with all names i nit
 everyone=as.factor(everyone)
-
 library(dplyr)
 setdiff(everyone,completenames) #find subjects, that don't appear in both lists, meaning didn't complete all trials
+
+
+#OR
+
+d_temp = newdata %>%
+  #Look at one subject at a time
+  group_by(SUBJ) %>%
+  #Only choose the ones where not all visits are present (where the sum of the visits is less than 21)
+  filter(sum(VISIT) < 21) 
+
+#List all the kids - all the different values in the SUBJ column
+levels(as.factor(d_temp$SUBJ))
+
+
 ```
 
 
@@ -257,11 +270,20 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
-#1
+#Note: I am a bit unsure how to interpret these tasks, but have tried. 
+#My interpretation is that the first task asks me to for each visit find the mean number of words spoken by all the kids, and the second task to for each kid find the mean number of words spoken at a visit
 
-#2
+# 1
+d = newdata %>% 
+  group_by(VISIT) %>% 
+  mutate(avgWordsForVisit = mean(tokens_CHI))
 
-#3
+# 2
+d = newdata %>% 
+  group_by(SUBJ) %>% 
+  mutate(avgWordsForSubject = mean(tokens_CHI))
 
+# 3
+#By averaing al the data we lose the opportunity to track progress if the kids throughout trial. There is also no indication of how accurate data is after transformation. No indicators of variability or other traits of distributions. The average may not be a accurate description at all."
 
 ```
