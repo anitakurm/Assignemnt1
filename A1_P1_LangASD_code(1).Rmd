@@ -206,18 +206,7 @@ cmlurows2=filter(newdata, newdata$CHI_MLU < 1.5& newdata$VISIT==1) #getting rows
 cmlunames2=unique(cmlurows2$SUBJ) 
 str(cmlunames2)
 
-#filtering data 3
-completevisits=filter(newdata, newdata$VISIT== 6) #find last visit rows
-completenames=unique(completevisits$SUBJ) #create a list of who made it to the sixth visit
-completenames=as.factor(completenames) #as factor
-
-everyone=unique(cleandata$SUBJ) #create a list with all names i nit
-everyone=as.factor(everyone)
-library(dplyr)
-setdiff(everyone,completenames) #find subjects, that don't appear in both lists, meaning didn't complete all trials
-
-
-#OR
+#filtering data
 
 d_temp = newdata %>%
   #Look at one subject at a time
