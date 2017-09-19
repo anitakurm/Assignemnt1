@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1 - Language Development in ASD - part 2"
-author: "Riccardo Fusaroli"
+author: "Anita Kurm"
 date: "July 7, 2017"
 output: html_document
 ---
@@ -110,7 +110,7 @@ Describe the characteristics of the two groups of participants and whether the t
 data$X <- NULL
 d_temp=filter(data, data$VISIT==1)
 
-#AGE, TDs are older than ASDs 
+#AGE, TDs are much younger than ASDs 
 summary(lm(Age~Diagnosis, d_temp))
 ggplot(d_temp, aes(Diagnosis, Age)) + 
   geom_boxplot()
@@ -126,7 +126,7 @@ barplot(counts,
         legend = rownames(counts))
 
 #VIQ
-summary(glm(verbalIQ~Diagnosis, family=gaussian, d_temp)) #TDs are higher, significant
+summary(glm(verbalIQ~Diagnosis, family=gaussian, d_temp)) #TDs are higher, nonsignificant
 ggplot(d_temp, aes(Diagnosis,verbalIQ))+
   geom_violin()
 #nonvIQ
@@ -137,6 +137,8 @@ ggplot(d_temp, aes(Diagnosis,nonVerbalIQ))+
 ```
 
 [REPORT THE RESULTS]
+TO characterize the population, I compared 
+
 
 ## Let's test hypothesis 1: Children with ASD display a language impairment  (Exercise 2)
 
