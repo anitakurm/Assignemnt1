@@ -169,8 +169,10 @@ r.squaredGLMM(m1)
 
 #Changes according to dianosis: MLU predicted by visit and diagnosis (fixed factor) independently from subject (random factor)
 #data$VISIT<- as.factor(data$VISIT)
-#ggplot(data, aes(VISIT, CHI_MLU))+geom_boxplot()
+data$VISIT<- as.factor(data$VISIT)
+ggplot(data, aes(VISIT, CHI_MLU))+geom_boxplot()+facet_wrap( ~ Diagnosis)
 
+data$VISIT<- as.numeric(data$VISIT)
 m2 <- lmer(CHI_MLU~1+VISIT+Diagnosis+(1+VISIT|SUBJ), data=data)
 summary(m2)
 
