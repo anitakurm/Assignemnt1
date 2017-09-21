@@ -81,6 +81,7 @@ Load necessary libraries : what will you need?
 ```{r Load Libraries}
 library(ggplot2)
 library(dplyr)
+library(lme4)
 ```
 
 ### Define your working directory and load the data
@@ -137,7 +138,12 @@ ggplot(d_temp, aes(Diagnosis,nonVerbalIQ))+
 ```
 
 [REPORT THE RESULTS]
-TO characterize the population, I compared 
+TO characterize the participant samples, I divided them into two groups: ASD and TD. A row of variables was examined to find the differences between two groups, and decide whether they are well balanced.
+Age: TDs are much younger than ASDs. 
+Gender: mostly males in both groups, due to nature of ASD- mostly met in boys
+Verbal IQ and non-verbal IQ differ non-significantly on visit 1, which makes the groups well-balanced. 
+
+Question: Age in TDs and ASDs - why the difference was so big?
 
 
 ## Let's test hypothesis 1: Children with ASD display a language impairment  (Exercise 2)
@@ -151,6 +157,18 @@ Remember to plot the data first and then to run a statistical test.
 - Which variable(s) should be included as random factors?
 
 ```{r}
+#Changes over time: MLU predicted by visit (fixed factor) independently from subject (random fctor)
+data$VISIT<- as.factor(data$VISIT)
+ggplot(data, aes(VISIT, CHI_MLU))+geom_boxplot()
+
+timemodel <- lmer(CHI_MLU~VISIT+(1|SUBJ), data=data, REML=FALSE)
+summary(timemodel) #output???
+
+#Changes according to dianosis: MLU predicted by visit and diagnosis (fixed factor) independently from subject (random factor)
+ggplot(data, aes(VISIT, CHI_MLU))+geom_boxplot()
+
+timemodel <- lmer(CHI_MLU~VISIT+(1|SUBJ), data=data, REML=FALSE)
+summary(timemodel)
 
 ```
 
