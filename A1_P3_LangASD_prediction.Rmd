@@ -34,7 +34,7 @@ How did your models from last time perform? In this exercise you have to compare
 - optional: predictions are never certain, can you identify the uncertainty of the predictions? (e.g. google predictinterval())
 
 
-[HERE GOES YOUR ANSWER]
+[HERE GOES YOUR ANSWER] rmse for train: 0.3055685, rmse for test: 0.4248335
 ```{r}
 #setwd
 setwd("~/Assignemnt1")
@@ -49,6 +49,8 @@ library(modelr)
 library(stringr)
 library (gsub)
 library(tidyverse)
+library(Metrics)
+library(caret)
 
 #load data
 traind <- read.csv("cleandata.csv")
@@ -91,19 +93,20 @@ testdata$Gender=revalue(testdata$Gender, c("1"="M", "2"="F"))
 testdata$Diagnosis=as.factor(testdata$Diagnosis)
 testdata$Diagnosis=revalue(testdata$Diagnosis, c("A"="ASD", "B"="TD"))
 
+testdata$SUBJ=as.factor(testdata$SUBJ)
+
 #model on the traindata
 m1 <- lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data = traind) 
 summary(m1) #output
 r.squaredGLMM(m1)
-
-rmse(m1,traind) #it's 0.3055685
+pred <- predict(m1,traind, allow.new.levels = TRUE)
+Metrics::rmse(pred,traind$CHI_MLU) #it's 0.3055685
 
 #model on the testdata
-pred <- predict(m1,testdata, allow.new.levels = TRUE)
+pred2 <- predict(m1,testdata, allow.new.levels = TRUE)
+Metrics::rmse(pred2,testdata$CHI_MLU) #it's 0.4248335
 
-rmse(
-
-
+#predictinterval
 
 ```
 
@@ -123,6 +126,39 @@ In this exercise you have to use cross-validation to calculate the predictive er
 - Bonus Question 1: How would you go comparing the performance of the basic model and the cross-validated model on the testing set?
 - Bonus Question 2: What is the effect of changing the number of folds? Can you plot RMSE as a function of number of folds?
 - Bonus Question 3: compare the cross-validated predictive error against the actual predictive error on the test data
+```{r}
+#create a basic model
+m2 <- lmer(CHI_MLU~VISIT+Diagnosis+(1+VISIT|SUBJ), data = traind)
+summary(m2) #output
+r.squaredGLMM(m2)
+
+#make a crossvalidated version
+  #folds first
+folds<- createFolds(unique(traind$SUBJ),k=4)
+
+
+  #loop through each fold, train a model on the other folds and test it on the fold)
+for(i in folds){
+  trainf=subset(traind, !(SUBJ %in% i)) #take all the values within subjects and tell me which one sare in
+  testf=subset(traind, SUBJ %in% i) #inverted to get the test fold
+  
+  predf1 <- predict(m1,trainf, allow.new.levels = TRUE) 
+  rmsevalue1 <- Metrics::rmse(predf1,trainf$CHI_MLU) #the rmse value for the train data of model 1
+  
+  predf2 <-predict(m1,testf, allow.new.levels = TRUE)
+  rmsevalue2<- Metrics::rmse(predf2,testf$CHI_MLU) #the rmse for the test data of model 1
+  
+  predf3<-predict(m2,trainf, allow.new.levels = TRUE)
+  rmsevalue3<-Metrics::rmse(predf3,trainf$CHI_MLU) #the rmse value for the train data of model 2
+  
+  predf4<-predict(m2,testf, allow.new.levels = TRUE)
+  rmsevalue3<-Metrics::rmse(predf4,testf$CHI_MLU) #the rmse value for the test data of model 2
+}
+  
+
+
+```
+
 
 ### Exercise 3) Assessing the single child
 
