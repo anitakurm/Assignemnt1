@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+Rmse(model,data)
 ```
 
 ## Welcome to the third exciting part of the Language Development in ASD exercise
@@ -33,6 +35,78 @@ How did your models from last time perform? In this exercise you have to compare
 
 
 [HERE GOES YOUR ANSWER]
+```{r}
+#setwd
+setwd("~/Assignemnt1")
+
+#libraries
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(lme4)
+library(MuMIn)
+library(modelr)
+library(stringr)
+library (gsub)
+library(tidyverse)
+
+#load data
+traind <- read.csv("cleandata.csv")
+testd1 <- read.csv("demo_test.csv")
+testd2 <- read.csv("LU_test.csv")
+testd3 <- read.csv("token_test.csv")
+
+#merge test data (code from part 1)
+testd1= rename(testd1, c(Child.ID="SUBJ", Visit = "VISIT"))
+testd2$VISIT=str_extract(testd2$VISIT,"\\d")
+testd3$VISIT=str_extract(testd3$VISIT,"\\d")
+
+testd1$SUBJ=gsub("\\.","",testd1$SUBJ)
+testd2$SUBJ=gsub("\\.","",testd2$SUBJ)
+testd3$SUBJ=gsub("\\.","",testd3$SUBJ)
+
+d_dn <- select(testd1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw)
+d_ln <- select(testd2,SUBJ, VISIT, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
+d_tn <-select(testd3,SUBJ, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
+d_ln$VISIT=as.numeric(d_ln$VISIT)
+data1<-merge(d_dn,d_tn)
+
+testd<-merge(data1, d_ln)
+
+d_vis=testd[testd$VISIT==1,]
+d_vis=plyr::rename(d_vis,c(ADOS="ADOSx", MullenRaw="nonVerbalIQ", ExpressiveLangRaw="verbalIQ"))
+selectd <- select(d_vis, SUBJ,ADOSx, nonVerbalIQ, verbalIQ)
+testdata=merge(testd, selectd, by="SUBJ") #we have extra columns
+
+testdata=subset(testdata, select = -c(ADOS,MullenRaw, ExpressiveLangRaw)) #dataset without NAs
+
+#childid into numbers
+testdata$SUBJ = as.numeric(as.factor(testdata$SUBJ))
+
+#genders 1=F 2=M
+testdata$Gender=as.factor(testdata$Gender)
+testdata$Gender=revalue(testdata$Gender, c("1"="M", "2"="F"))
+
+#diagnosis A= ASD and B=TD
+testdata$Diagnosis=as.factor(testdata$Diagnosis)
+testdata$Diagnosis=revalue(testdata$Diagnosis, c("A"="ASD", "B"="TD"))
+
+#model on the traindata
+m1 <- lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data = traind) 
+summary(m1) #output
+r.squaredGLMM(m1)
+
+rmse(m1,traind) #it's 0.3055685
+
+#model on the testdata
+pred <- predict(m1,testdata, allow.new.levels = TRUE)
+
+rmse(
+
+
+
+```
+
 
 ### Exercise 2) Model Selection via Cross-validation (N.B: ChildMLU!)
 

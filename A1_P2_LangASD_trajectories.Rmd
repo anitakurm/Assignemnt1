@@ -209,7 +209,7 @@ Linguistic development of children MLU is affected by time and diagnosis [COMPLE
 ```{r}
 #over time
 data$VISIT<- as.factor(data$VISIT)
-ggplot(data, aes(VISIT, MOT_MLU))+geom_boxplot()
+ggplot(data, aes(VISIT, MOT_MLU))+geom_boxplot()+facet_wrap( ~ Diagnosis)
 
 data$VISIT<- as.numeric(data$VISIT)
 m3 <- lmer(MOT_MLU~VISIT+Diagnosis+(1+VISIT|SUBJ), data=data)
