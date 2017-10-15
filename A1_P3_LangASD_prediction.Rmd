@@ -1,14 +1,14 @@
 ---
 title: "Assignment 1 - Language Development in ASD - part 3"
-author: "Riccardo Fusaroli"
+author: "Anita Kurm"
 date: "August 10, 2017"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
 
-Rmse(model,data)
 ```
 
 ## Welcome to the third exciting part of the Language Development in ASD exercise
@@ -47,7 +47,6 @@ library(lme4)
 library(MuMIn)
 library(modelr)
 library(stringr)
-library (gsub)
 library(tidyverse)
 library(Metrics)
 library(caret)
@@ -59,7 +58,7 @@ testd2 <- read.csv("LU_test.csv")
 testd3 <- read.csv("token_test.csv")
 
 #merge test data (code from part 1)
-testd1= rename(testd1, c(Child.ID="SUBJ", Visit = "VISIT"))
+testd1= plyr::rename(testd1, c(Child.ID="SUBJ", Visit = "VISIT"))
 testd2$VISIT=str_extract(testd2$VISIT,"\\d")
 testd3$VISIT=str_extract(testd3$VISIT,"\\d")
 
@@ -152,7 +151,7 @@ for(i in folds){
   rmsevalue3<-Metrics::rmse(predf3,trainf$CHI_MLU) #the rmse value for the train data of model 2
   
   predf4<-predict(m2,testf, allow.new.levels = TRUE)
-  rmsevalue3<-Metrics::rmse(predf4,testf$CHI_MLU) #the rmse value for the test data of model 2
+  rmsevalue4<-Metrics::rmse(predf4,testf$CHI_MLU) #the rmse value for the test data of model 2
 }
   
 
@@ -174,6 +173,12 @@ You want to evaluate:
 - how does the child fare compared to the model predictions at Visit 6? Is the child below or above expectations? (tip: use the predict() function on Bernie's data only and compare the prediction with the actual performance of the child)
 
 [HERE GOES YOUR ANSWER]
+```{r}
+#extract Bernie from testdata
+#how to do that?
+
+```
+
 
 ### OPTIONAL: Exercise 4) Model Selection via Information Criteria
 Another way to reduce the bad surprises when testing a model on new data is to pay close attention to the relative information criteria between the models you are comparing. Let's learn how to do that!
