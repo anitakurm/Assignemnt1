@@ -239,13 +239,12 @@ Average TD kid scores subtracted from Bernie's CHI_MLU scores give us absolute d
 
 The  difference of CHI_MLU between the prediction of our model and Bernie's actual score is very small (0.04). Bernie is scoring slightly more than an average TD kid does and than our model predicts him to. Based on this, I would conclude that Bernie is a typically developing kid. However, in the datased, Bernie has a diagnosis ASD.
 ```{r}
-#extract Bernie from testdata
-#how to do that?
+
 
 #Create model from last excercise
 Model_Final = lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data=traind)
 
-#Create Bernie dataset. He is Kid number  (we know it from the original test dataset, where subjects have names)
+#Create Bernie dataset. He is Kid number 2 (we know it from the original test dataset, where subjects have names)
 Bernie_d = subset(testdata, SUBJ == 2)
 
 
@@ -289,7 +288,7 @@ Bernie_d$CHI_MLU[6]
 #Get absolute difference
 predict(Model_Final, Bernie_d)[6] - Bernie_d$CHI_MLU[6]
 
-#The difference is very small, he is scoring slightly more than an average typically developing kid, so based on this, I would conclude that Bernie is typically developing kid. 
+#The difference is very small, he is scoring slightly more than our model predicts him to, so based on this, I would conclude that Bernie is typically developing kid. 
 ```
 
 
