@@ -18,6 +18,17 @@ In this exercise we will assess how many participants we would need to adequatel
 How much power does your study have (if your model estimates are quite right)?
 - [GitHub]Load your dataset, fit your favorite model, assess power for your main effects and interactions of interest.
 - Report the power analysis and comment on what you can (or cannot) use its estimates for.
+```{r}
+#load dataset
+traind <- read.csv("cleandata.csv")
+testd <- read.csv("testdata.csv")
+testd=subset(testd, select = -c(X)) #dataset without x
+
+
+
+
+```
+
 
 ### Exercise 2
 

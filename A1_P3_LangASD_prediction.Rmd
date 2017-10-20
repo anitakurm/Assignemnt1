@@ -34,7 +34,12 @@ How did your models from last time perform? In this exercise you have to compare
 - optional: predictions are never certain, can you identify the uncertainty of the predictions? (e.g. google predictinterval())
 
 
-[HERE GOES YOUR ANSWER] rmse for train: 0.3055685, rmse for test: 0.4248335
+[HERE GOES YOUR ANSWER]
+Answer:
+The model from last assignment was used in the first exercise: lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ)
+The model has a root mean squared error of 0.31, when performed  on the train data
+And a root mean squared error of 0.42, when tested on a new dataset
+
 ```{r}
 #setwd
 setwd("~/Assignemnt1")
@@ -53,9 +58,12 @@ library(caret)
 
 #load data
 traind <- read.csv("cleandata.csv")
+traind$SUBJ = as.numeric(as.factor(traind$SUBJ))
+
 testd1 <- read.csv("demo_test.csv")
 testd2 <- read.csv("LU_test.csv")
 testd3 <- read.csv("token_test.csv")
+
 
 #merge test data (code from part 1)
 testd1= plyr::rename(testd1, c(Child.ID="SUBJ", Visit = "VISIT"))
@@ -93,6 +101,7 @@ testdata$Diagnosis=as.factor(testdata$Diagnosis)
 testdata$Diagnosis=revalue(testdata$Diagnosis, c("A"="ASD", "B"="TD"))
 
 testdata$SUBJ=as.factor(testdata$SUBJ)
+write.csv(testdata, file = "testdata.csv")
 
 #model on the traindata
 m1 <- lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data = traind) 
@@ -106,6 +115,7 @@ pred2 <- predict(m1,testdata, allow.new.levels = TRUE)
 Metrics::rmse(pred2,testdata$CHI_MLU) #it's 0.4248335
 
 #predictinterval
+
 
 ```
 
@@ -125,37 +135,86 @@ In this exercise you have to use cross-validation to calculate the predictive er
 - Bonus Question 1: How would you go comparing the performance of the basic model and the cross-validated model on the testing set?
 - Bonus Question 2: What is the effect of changing the number of folds? Can you plot RMSE as a function of number of folds?
 - Bonus Question 3: compare the cross-validated predictive error against the actual predictive error on the test data
+
+Cross-validated testing with 5 folds showed that the basic model had a mean rmse of 0.32 on the train data, and of 0.62 when tested on new data.
+
+A better model in terms of cross-validation was 
+lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data = dtrain_temp)
+With a mean rmse of 0.31, and of 0.57 when tested on a new dataset.
 ```{r}
-#create a basic model
-m2 <- lmer(CHI_MLU~VISIT+Diagnosis+(1+VISIT|SUBJ), data = traind)
-summary(m2) #output
-r.squaredGLMM(m2)
 
-#make a crossvalidated version
+#make CROSS-VALIDATION
+
+#Make variables into factors
+traind$SUBJ = as.factor(traind$SUBJ)
+traind$Gender = as.factor(traind$Gender)
+traind$Diagnosis = as.factor(traind$Diagnosis)
   #folds first
-folds<- createFolds(unique(traind$SUBJ),k=4)
+Folds<- createFolds(unique(traind$SUBJ),k=5)
+Folds
+
+#Preperations for loop - result lists and n reset
+rmse_train = NULL
+rmse_test = NULL
+n=1
 
 
-  #loop through each fold, train a model on the other folds and test it on the fold)
-for(i in folds){
-  trainf=subset(traind, !(SUBJ %in% i)) #take all the values within subjects and tell me which one sare in
-  testf=subset(traind, SUBJ %in% i) #inverted to get the test fold
+  #loop through each fold, train a model on the other folds and test it on the fold), thanks Peter!
+
+
+#THE LOOP FOR THE BASIC MODEL  
+for (i in Folds) {
+  #Make a test dataset with one fold
+  dtest_temp = subset(traind, SUBJ %in% i)
+  #Make a training dataset with all other folds
+  dtrain_temp = subset(traind, !SUBJ %in% i)
+                       
+  #Make a model on the training dataset
+  Model_temp = lmer(CHI_MLU~VISIT+Diagnosis+(1+VISIT|SUBJ), data = dtrain_temp)
   
-  predf1 <- predict(m1,trainf, allow.new.levels = TRUE) 
-  rmsevalue1 <- Metrics::rmse(predf1,trainf$CHI_MLU) #the rmse value for the train data of model 1
+  #Check error between fit of training data and actual training data
+  rmse_train[n] = Metrics :: rmse(dtrain_temp$CHI_MLU, fitted(Model_temp))
   
-  predf2 <-predict(m1,testf, allow.new.levels = TRUE)
-  rmsevalue2<- Metrics::rmse(predf2,testf$CHI_MLU) #the rmse for the test data of model 1
-  
-  predf3<-predict(m2,trainf, allow.new.levels = TRUE)
-  rmsevalue3<-Metrics::rmse(predf3,trainf$CHI_MLU) #the rmse value for the train data of model 2
-  
-  predf4<-predict(m2,testf, allow.new.levels = TRUE)
-  rmsevalue4<-Metrics::rmse(predf4,testf$CHI_MLU) #the rmse value for the test data of model 2
+  #Check error between predicitions for test data and actual test data
+  rmse_test[n] = Metrics :: rmse(dtest_temp$CHI_MLU, predict(Model_temp, dtest_temp, allow.new.levels=T)) 
+
+    #Loop end and n+1
+  n=n+1
 }
+
+#Get results
+rmse_train
+mean(rmse_train) #0.3230275
+
+rmse_test
+mean(rmse_test) #0.6204807
+
+#THE LOOP FOR THE BEST MODEL
+for (i in Folds) {
+  #Make a test dataset with one fold
+  dtest_temp = subset(traind, SUBJ %in% i)
+  #Make a training dataset with all other folds
+  dtrain_temp = subset(traind, !SUBJ %in% i)
+                       
+  #Make a model on the training dataset
+  Model_temp = lmer(CHI_MLU~VISIT+Diagnosis+types_CHI+verbalIQ+(1+VISIT|SUBJ), data = dtrain_temp)
   
+  #Check error between fit of training data and actual training data
+  rmse_train[n] = Metrics :: rmse(dtrain_temp$CHI_MLU, fitted(Model_temp))
+  
+  #Check error between predicitions for test data and actual test data
+  rmse_test[n] = Metrics :: rmse(dtest_temp$CHI_MLU, predict(Model_temp, dtest_temp, allow.new.levels=T)) 
 
+    #Loop end and n+1
+  n=n+1
+}
 
+#Get results
+rmse_train
+mean(rmse_train) #0.3171907
+
+rmse_test
+mean(rmse_test) #0.5652438
 ```
 
 
